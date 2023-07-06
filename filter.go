@@ -17,7 +17,7 @@ type Filter struct {
 func NewFilter() *Filter {
 	return &Filter{
 		trie:  NewTrie(),
-		noise: regexp.MustCompile(`[\|\s-=_+!#^&%$@*(){}\[\]]+`),
+		noise: regexp.MustCompile(specialCharacter),
 	}
 }
 
@@ -63,13 +63,6 @@ func (filter *Filter) DelWord(words ...string) {
 func (filter *Filter) FindIn(text string) (bool, string) {
 	text = filter.RemoveNoise(text)
 	return filter.trie.FindIn(text)
-}
-
-// FindIn 检测关键字 -> 不连续 规则2
-// 规则 2.【麦|当|劳】匹配：麦 1 当 1 劳 1112331 香浓咖啡，无限续杯
-func (filter *Filter) FindInWithoutStrict(text string) (bool, string) {
-	text = filter.RemoveNoise(text)
-	return filter.trie.FindInWithoutStrict(text)
 }
 
 // RemoveNoise 去除无效特殊字符

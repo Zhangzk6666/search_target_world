@@ -102,58 +102,6 @@ func (tree *Trie) FindIn(text string) (bool, string) {
 	return false, Empty
 }
 
-// FindIn 检测关键字 -> 不连续
-func (tree *Trie) FindInWithoutStrict(text string) (bool, string) {
-	const (
-		Empty = ""
-	)
-	var (
-		parent           = tree.Root
-		current          *Node
-		runes            = []rune(text)
-		length           = len(runes)
-		left             = 0
-		found            bool
-		nowFound         bool
-		nowFoundPosition int
-	)
-
-	for position := 0; position <= len(runes); position++ {
-		if position == len(runes) {
-			if nowFound {
-				// 已然查找失败,寻找下一个可能存在的关键字
-				nowFound = false
-				position = nowFoundPosition
-				continue
-			} else {
-				break
-			}
-		}
-		current, found = parent.Children[runes[position]]
-		if !found || (!current.IsPathEnd() && position == length-1) {
-			if !nowFound {
-				parent = tree.Root
-				position = left
-				left++
-				continue
-			}
-		}
-		if found {
-			if nowFound == false {
-				nowFoundPosition = position
-			}
-			nowFound = true
-			parent = current
-		}
-
-		if found && current.IsPathEnd() && left <= position {
-			// TODO 目前返回的string可能不正确，需要重新调整！
-			return true, string(runes[left : position+1])
-		}
-	}
-	return false, Empty
-}
-
 // NewNode 新建子节点
 func NewNode(character rune) *Node {
 	return &Node{

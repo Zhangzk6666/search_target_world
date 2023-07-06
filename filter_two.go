@@ -17,7 +17,7 @@ type FilterModelTwo struct {
 func NewFilterModelTwo() *FilterModelTwo {
 	return &FilterModelTwo{
 		TrieModelTwo: NewTrieModelTwo(),
-		noise:        regexp.MustCompile(`[\|\s-=_+!#^&%$@*(){}\[\]]+`),
+		noise:        regexp.MustCompile(specialCharacter),
 	}
 }
 
@@ -58,11 +58,11 @@ func (FilterModelTwo *FilterModelTwo) AddWord(words ...string) {
 // 	FilterModelTwo.TrieModelTwo.Del(words...)
 // }
 
-// FindIn 检测关键字 -> 不连续 规则2
+// FindIn 检测关键字 -> 不连续 规则1 和 2
 // 规则 2.【麦|当|劳】匹配：麦 1 当 1 劳 1112331 香浓咖啡，无限续杯
-func (FilterModelTwo *FilterModelTwo) FindInWithoutStrict(text string) (bool, string) {
+func (FilterModelTwo *FilterModelTwo) FindIn(text string) (bool, string) {
 	text = FilterModelTwo.RemoveNoise(text)
-	return FilterModelTwo.TrieModelTwo.FindInWithoutStrict(text)
+	return FilterModelTwo.TrieModelTwo.FindIn(text)
 }
 
 // RemoveNoise 去除无效特殊字符

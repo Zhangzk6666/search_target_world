@@ -2,24 +2,34 @@ package main
 
 import (
 	"fmt"
-	search_target_world "search_target_world"
+	"search_target_world"
 )
 
 func main() {
-	// filter := search_target_world.NewFilter()
-	// filter.LoadWordDict("dict/word.txt")
-	// // model 1
-	// found, res := filter.FindIn("肯德基麦辣鸡腿堡，买一送一")
-	// found1, res1 := filter.FindIn("{汉}[堡](王) 狠霸王牛堡，美味无限")
-	// fmt.Println(found, " ", res)
-	// fmt.Println(found1, " ", res1)
+	onlyRuleOneApplie()
+	ruleOneAndTwoApplies()
+}
 
+func onlyRuleOneApplie() {
+	// 仅适用于规则一
+	filter := search_target_world.NewFilter()
+	filter.LoadWordDict("dict/onlyRuleOneApplie.txt")
+	found, res := filter.FindIn("肯德基麦辣鸡腿堡，买一送一")
+	found1, res1 := filter.FindIn("{汉}[堡](王) 狠霸王牛堡，美味无限")
+	fmt.Println(found, " ", res)
+	fmt.Println(found1, " ", res1)
+}
+
+func ruleOneAndTwoApplies() {
+	// 适用于规则一和规则二
 	filter := search_target_world.NewFilterModelTwo()
-	filter.LoadWordDict("dict/word.txt")
-	// // TODO model 2
-	// str := "麦 1 当 1  劳1112331 香浓咖啡，肯1德s基3无限续杯"
-	str := "fewgeg肯德基df"
-	// str := "肯|德基麦辣鸡腿堡，买一送一"
-	found3, res3 := filter.FindInWithoutStrict(str)
+	filter.LoadWordDict("dict/ruleOneAndTwoApplies.txt")
+	str := "沙县小吃"
+	//TODO bug
+	//啊888 错误 但是后面  啊88888 是可以匹配的
+	str1 := "肯德基啊888啊88888"
+	found3, res3 := filter.FindIn(str)
+	found4, res4 := filter.FindIn(str1)
 	fmt.Println(found3, " ", res3)
+	fmt.Println(found4, " ", res4)
 }

@@ -1,6 +1,8 @@
 package search_target_world
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // TrieModelTwo 短语组成的TrieModelTwo树.
 type TrieModelTwo struct {
@@ -47,9 +49,8 @@ func (tree *TrieModelTwo) add(word string) {
 		flag := false
 		if position+1 < len(runes) {
 			if runes[position+1] != []rune("|")[0] {
-				fmt.Println("here true.....")
-				fmt.Println(word, " ", position)
 				flag = true
+				// fmt.Println(string(runes), "  here true...")
 			}
 		}
 		if next, ok := current.Children[ChildrenKey{
@@ -101,7 +102,6 @@ func (tree *TrieModelTwo) add(word string) {
 
 // TODO
 func in(runes []rune, position int, parent *NodeModelTwo) (ok bool, index int) {
-	fmt.Println("position:  ", position)
 	if parent == nil {
 		return false, -1
 	}
@@ -117,19 +117,23 @@ func in(runes []rune, position int, parent *NodeModelTwo) (ok bool, index int) {
 		Character:  runes[position],
 		isContinue: true,
 	}]; ok {
+		if position+1 >= len(runes) {
+			// 说明已然是最后一个元素了
+			return true, position
+		}
 		current = currentTemp
 		nextTemp := runes[position+1]
-		if next, ok := currentTemp.Children[ChildrenKey{
+		if _, ok := currentTemp.Children[ChildrenKey{
 			Character:  nextTemp,
 			isContinue: true,
 		}]; ok {
-			return in(runes, position+1, next)
+			return in(runes, position+1, current)
 		}
-		if next, ok := current.Children[ChildrenKey{
+		if _, ok := current.Children[ChildrenKey{
 			Character:  nextTemp,
 			isContinue: false,
 		}]; ok {
-			return in(runes, position+1, next)
+			return in(runes, position+1, current)
 		}
 	}
 	if currentTemp, ok := parent.Children[ChildrenKey{
@@ -142,18 +146,18 @@ func in(runes []rune, position int, parent *NodeModelTwo) (ok bool, index int) {
 		}
 		current = currentTemp
 		nextTemp := runes[position+1]
-		if next, ok := current.Children[ChildrenKey{
+		if _, ok := current.Children[ChildrenKey{
 			Character:  nextTemp,
 			isContinue: true,
 		}]; ok {
-			return in(runes, position+1, next)
+			return in(runes, position+1, current)
 		}
 
-		if next, ok := current.Children[ChildrenKey{
+		if _, ok := current.Children[ChildrenKey{
 			Character:  nextTemp,
 			isContinue: false,
 		}]; ok {
-			return in(runes, position+1, next)
+			return in(runes, position+1, current)
 		}
 	}
 	if current == nil {
@@ -165,9 +169,8 @@ func in(runes []rune, position int, parent *NodeModelTwo) (ok bool, index int) {
 	return in(runes, position+1, current)
 }
 
-// FindIn 检测关键字 -> 不连续
-func (tree *TrieModelTwo) FindInWithoutStrict(text string) (bool, string) {
-	fmt.Println("FindInWithoutStrict()")
+// FindIn 检测关键字 -> 不连续 应用于规则1 和 2
+func (tree *TrieModelTwo) FindIn(text string) (bool, string) {
 	const (
 		Empty = ""
 	)
@@ -249,10 +252,10 @@ func (tree *TrieModelTwo) FindInWithoutStrict(text string) (bool, string) {
 		// TODO 递归到底 | 目前必须如此
 		ok, index := in(runes, position+1, current)
 		if ok {
-			fmt.Println("递归结果test......")
+			// fmt.Println("递归结果test......")
 			return true, string(runes[left : index+1])
 		} else {
-			fmt.Println("递归查找失败")
+			// fmt.Println("递归查找失败")
 			if isRunesContinue {
 				current, found = parent.Children[ChildrenKey{
 					Character:  runes[position],
@@ -261,27 +264,13 @@ func (tree *TrieModelTwo) FindInWithoutStrict(text string) (bool, string) {
 				// TODO 递归到底 | 目前必须如此
 				ok, index := in(runes, position+1, current)
 				if ok {
-					fmt.Println("递归结果test......")
+					// fmt.Println("递归结果test......")
 					return true, string(runes[left : index+1])
 				} else {
-					fmt.Println("递归查找失败")
+					// fmt.Println("递归查找失败")
 				}
 			}
 		}
-		// if isMust {
-		// 	current, found = parent.Children[ChildrenKey{
-		// 		Character:  runes[position],
-		// 		isContinue: isMust,
-		// 	}]
-		// 	// TODO 递归到底 | 目前必须如此
-		// 	ok, index := in(runes, position+1, current)
-		// 	if ok {
-		// 		fmt.Println("递归结果test......")
-		// 		return true, string(runes[left : index+1])
-		// 	} else {
-		// 		fmt.Println("递归查找失败")
-		// 	}
-		// }
 
 		if !found || (!current.IsPathEnd() && position == length-1) {
 			if !nowFound {
@@ -291,15 +280,6 @@ func (tree *TrieModelTwo) FindInWithoutStrict(text string) (bool, string) {
 				continue
 			}
 		}
-
-		// // TODO 递归到底 | 目前必须如此
-		// ok, index := in(runes, position+1, current)
-		// if ok {
-		// 	fmt.Println("递归结果test......")
-		// 	return true, string(runes[left:index])
-		// } else {
-		// 	fmt.Println("递归查找失败")
-		// }
 
 		if found {
 			if nowFound == false {
