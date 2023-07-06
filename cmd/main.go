@@ -17,9 +17,9 @@ func main() {
 	filter := search_target_world.NewFilterModelTwo()
 	filter.LoadWordDict("dict/word.txt")
 	// // TODO model 2
-	// str := "麦 1 当 1  劳1112331 香浓咖啡，肯1德基3无限续杯"
-	str := "肯1|fsdrjhgiudfjgb德基"
-	// str := "肯德基麦辣鸡腿堡，买一送一"
+	// str := "麦 1 当 1  劳1112331 香浓咖啡，肯1德s基3无限续杯"
+	str := "fewgeg肯德基df"
+	// str := "肯|德基麦辣鸡腿堡，买一送一"
 	found3, res3 := filter.FindInWithoutStrict(str)
 	fmt.Println(found3, " ", res3)
 }

@@ -136,6 +136,10 @@ func in(runes []rune, position int, parent *NodeModelTwo) (ok bool, index int) {
 		Character:  runes[position],
 		isContinue: false,
 	}]; ok {
+		if position+1 >= len(runes) {
+			// 说明已然是最后一个元素了
+			return true, position
+		}
 		current = currentTemp
 		nextTemp := runes[position+1]
 		if next, ok := current.Children[ChildrenKey{
@@ -191,7 +195,7 @@ func (tree *TrieModelTwo) FindInWithoutStrict(text string) (bool, string) {
 		}
 
 		// 先看看有没有递归的必要
-		isMust := false
+		isRunesContinue := false
 		if position+1 < len(runes) {
 			currentTemp := runes[position]
 			if parent != nil {
@@ -204,14 +208,14 @@ func (tree *TrieModelTwo) FindInWithoutStrict(text string) (bool, string) {
 						Character:  nextTemp,
 						isContinue: true,
 					}]; ok {
-						isMust = true
+						isRunesContinue = true
 					}
 
 					if _, ok := current.Children[ChildrenKey{
 						Character:  nextTemp,
 						isContinue: false,
 					}]; ok {
-						isMust = true
+						isRunesContinue = true
 					}
 				}
 
@@ -224,22 +228,61 @@ func (tree *TrieModelTwo) FindInWithoutStrict(text string) (bool, string) {
 						Character:  nextTemp,
 						isContinue: true,
 					}]; ok {
-						isMust = true
+						isRunesContinue = true
 					}
 
 					if _, ok := current.Children[ChildrenKey{
 						Character:  nextTemp,
 						isContinue: false,
 					}]; ok {
-						isMust = true
+						isRunesContinue = true
 					}
 				}
 			}
 		}
+
+		// if isRunesContinue == true 优先考虑
 		current, found = parent.Children[ChildrenKey{
 			Character:  runes[position],
-			isContinue: isMust,
+			isContinue: isRunesContinue,
 		}]
+		// TODO 递归到底 | 目前必须如此
+		ok, index := in(runes, position+1, current)
+		if ok {
+			fmt.Println("递归结果test......")
+			return true, string(runes[left : index+1])
+		} else {
+			fmt.Println("递归查找失败")
+			if isRunesContinue {
+				current, found = parent.Children[ChildrenKey{
+					Character:  runes[position],
+					isContinue: !isRunesContinue,
+				}]
+				// TODO 递归到底 | 目前必须如此
+				ok, index := in(runes, position+1, current)
+				if ok {
+					fmt.Println("递归结果test......")
+					return true, string(runes[left : index+1])
+				} else {
+					fmt.Println("递归查找失败")
+				}
+			}
+		}
+		// if isMust {
+		// 	current, found = parent.Children[ChildrenKey{
+		// 		Character:  runes[position],
+		// 		isContinue: isMust,
+		// 	}]
+		// 	// TODO 递归到底 | 目前必须如此
+		// 	ok, index := in(runes, position+1, current)
+		// 	if ok {
+		// 		fmt.Println("递归结果test......")
+		// 		return true, string(runes[left : index+1])
+		// 	} else {
+		// 		fmt.Println("递归查找失败")
+		// 	}
+		// }
+
 		if !found || (!current.IsPathEnd() && position == length-1) {
 			if !nowFound {
 				parent = tree.Root
@@ -249,12 +292,14 @@ func (tree *TrieModelTwo) FindInWithoutStrict(text string) (bool, string) {
 			}
 		}
 
-		// TODO 递归到底 | 目前必须如此
-		ok, index := in(runes, position+1, current)
-		if ok {
-			fmt.Println("递归结果test......")
-			return true, string(runes[left:index])
-		}
+		// // TODO 递归到底 | 目前必须如此
+		// ok, index := in(runes, position+1, current)
+		// if ok {
+		// 	fmt.Println("递归结果test......")
+		// 	return true, string(runes[left:index])
+		// } else {
+		// 	fmt.Println("递归查找失败")
+		// }
 
 		if found {
 			if nowFound == false {
