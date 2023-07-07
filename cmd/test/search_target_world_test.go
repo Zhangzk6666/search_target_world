@@ -6,28 +6,28 @@ import (
 )
 
 // 仅应用规则一
-// func TestModelOne(t *testing.T) {
-// 	filter := search_target_world.NewFilter()
-// 	filter.AddWord("肯德基")
-// 	str := "肯德基麦辣鸡腿堡，买一送一"
-// 	if ok, res := filter.FindIn(str); ok != true {
-// 		t.Errorf("%s not pass", str)
-// 	} else {
-// 		t.Log(str, "  ==>  ", res)
-// 	}
+func TestModelOne(t *testing.T) {
+	filter := search_target_world.NewFilter()
+	filter.AddWord("肯德基")
+	str := "肯德基麦辣鸡腿堡，买一送一"
+	if ok, res := filter.FindIn(str); ok != true {
+		t.Errorf("%s not pass", str)
+	} else {
+		t.Log(str, "  ==>  ", res)
+	}
 
-// 	str = `{汉}[堡](王) 狠霸王牛堡，美味无限`
-// 	if ok, _ := filter.FindIn(str); ok != false {
-// 		t.Errorf("%s not pass", str)
-// 	}
-// 	filter.AddWord("汉堡王")
-// 	str = `{汉\}[堡](王) 狠霸王牛堡，美味无限`
-// 	if ok, res := filter.FindIn(str); ok != true {
-// 		t.Errorf("%s not pass", str)
-// 	} else {
-// 		t.Log(str, "  ==>  ", res)
-// 	}
-// }
+	str = `{汉}[堡](王) 狠霸王牛堡，美味无限`
+	if ok, _ := filter.FindIn(str); ok != false {
+		t.Errorf("%s not pass", str)
+	}
+	filter.AddWord("汉堡王")
+	str = `{汉\}[堡](王) 狠霸王牛堡，美味无限`
+	if ok, res := filter.FindIn(str); ok != true {
+		t.Errorf("%s not pass", str)
+	} else {
+		t.Log(str, "  ==>  ", res)
+	}
+}
 
 // 可以应用于规则一和规则二
 func TestModelTwo(t *testing.T) {
