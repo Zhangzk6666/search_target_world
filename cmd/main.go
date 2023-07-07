@@ -34,7 +34,7 @@ func ruleOneAndTwoApplies() {
 	fmt.Println(found3, " ", res3)
 	found4, res4 := filter.FindIn(str1)
 	fmt.Println(found4, " ", res4)
-	str2 := "麦当劳啊888当劳啊88888"
+	str2 := "麦当劳啊888当劳啊98888"
 	found5, res5 := filter.FindIn(str2)
 	fmt.Println(found5, " ", res5)
 
