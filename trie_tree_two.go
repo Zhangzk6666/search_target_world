@@ -100,13 +100,12 @@ func (tree *TrieModelTwo) add(word string) {
 // 	}
 // }
 
-func in(runes []rune, backPosition, position int, backParent, parent *NodeModelTwo) (ok bool, index int) {
+func in(runes []rune, backPosition, position int, allowBack bool, backParent, parent *NodeModelTwo) (ok bool, index int) {
 	if parent == nil {
-		if backPosition < len(runes) && backParent != nil {
+		if backPosition < len(runes) && allowBack && backParent != nil {
 			// 回退
-			// fmt.Println()
 			fmt.Println(string(runes[backPosition:]), "回退1 ", string(backParent.Character))
-			return in(runes, backPosition+1, backPosition+1, backParent, backParent)
+			return in(runes, backPosition+1, backPosition+1, allowBack, backParent, backParent)
 		}
 		return false, -1
 	}
@@ -114,10 +113,10 @@ func in(runes []rune, backPosition, position int, backParent, parent *NodeModelT
 		return true, position
 	}
 	if len(runes) <= 0 || position >= len(runes) {
-		if backPosition < len(runes) && backParent != nil {
+		if backPosition < len(runes) && allowBack && backParent != nil {
 			// 回退
 			fmt.Println("回退2")
-			return in(runes, backPosition+1, backPosition+1, backParent, backParent)
+			return in(runes, backPosition+1, backPosition+1, allowBack, backParent, backParent)
 		}
 		return false, -1
 	}
@@ -127,63 +126,74 @@ func in(runes []rune, backPosition, position int, backParent, parent *NodeModelT
 		Character:  runes[position],
 		isContinue: true,
 	}]; ok {
-		if position+1 >= len(runes) {
-			// 说明已然是最后一个元素了
-			return true, position
-		}
 		current = currentTemp
-		nextTemp := runes[position+1]
-		if _, ok := currentTemp.Children[ChildrenKey{
-			Character:  nextTemp,
-			isContinue: true,
-		}]; ok {
-			return in(runes, backPosition, position+1, backParent, current)
+		if position+1 < len(runes) {
+			// 说明已然是最后一个元素了
+			// return true, position
+			// }
+
+			nextTemp := runes[position+1]
+			if _, ok := currentTemp.Children[ChildrenKey{
+				Character:  nextTemp,
+				isContinue: true,
+			}]; ok {
+				return in(runes, backPosition, position+1, allowBack, backParent, current)
+			}
+			if _, ok := current.Children[ChildrenKey{
+				Character:  nextTemp,
+				isContinue: false,
+			}]; ok {
+				return in(runes, backPosition, position+1, allowBack, backParent, current)
+			}
+		} else {
+			if current.IsPathEnd() {
+				return true, position + 1
+			}
 		}
-		if _, ok := current.Children[ChildrenKey{
-			Character:  nextTemp,
-			isContinue: false,
-		}]; ok {
-			return in(runes, backPosition, position+1, backParent, current)
-		}
+
 	}
 	if currentTemp, ok := parent.Children[ChildrenKey{
 		Character:  runes[position],
 		isContinue: false,
 	}]; ok {
-		if position+1 >= len(runes) {
-			// 说明已然是最后一个元素了
-			return true, position
-		}
 		current = currentTemp
-		nextTemp := runes[position+1]
-		if _, ok := current.Children[ChildrenKey{
-			Character:  nextTemp,
-			isContinue: true,
-		}]; ok {
-			return in(runes, backPosition, position+1, backParent, current)
-		}
+		if position+1 < len(runes) {
+			// 说明已然是最后一个元素了
+			// return true, position
+			// }
+			nextTemp := runes[position+1]
+			if _, ok := current.Children[ChildrenKey{
+				Character:  nextTemp,
+				isContinue: true,
+			}]; ok {
+				return in(runes, backPosition, position+1, allowBack, backParent, current)
+			}
 
-		if _, ok := current.Children[ChildrenKey{
-			Character:  nextTemp,
-			isContinue: false,
-		}]; ok {
-			return in(runes, backPosition, position+1, backParent, current)
+			if _, ok := current.Children[ChildrenKey{
+				Character:  nextTemp,
+				isContinue: false,
+			}]; ok {
+				return in(runes, backPosition, position+1, allowBack, backParent, current)
+			}
+		} else {
+			if current.IsPathEnd() {
+				return true, position + 1
+			}
 		}
 	}
 	if current == nil {
 		current = parent
 	}
 	if current.isContinue {
-		if backPosition < len(runes) && backParent != nil {
+		if backPosition < len(runes) && allowBack && backParent != nil {
 			// 回退
-			// fmt.Println("回退3")
 			fmt.Println(string(runes[backPosition:]), "回退3 ", string(backParent.Character))
 
-			return in(runes, backPosition+1, backPosition+1, backParent, backParent)
+			return in(runes, backPosition+1, backPosition+1, allowBack, backParent, backParent)
 		}
 		return false, -1
 	}
-	return in(runes, backPosition, position+1, backParent, current)
+	return in(runes, backPosition, position+1, allowBack, backParent, current)
 }
 
 // TODO
@@ -209,6 +219,7 @@ func (tree *TrieModelTwo) FindIn(text string) (bool, string) {
 		if position == len(runes) {
 			if nowFound {
 				// 已然查找失败,寻找下一个可能存在的关键字
+				fmt.Println("已然查找失败,寻找下一个可能存在的关键字")
 				nowFound = false
 				position = nowFoundPosition
 				continue
@@ -269,26 +280,36 @@ func (tree *TrieModelTwo) FindIn(text string) (bool, string) {
 			Character:  runes[position],
 			isContinue: isRunesContinue,
 		}]
+		allowBack := false
+		if found && parent.isContinue == false {
+			allowBack = true
+			fmt.Println("allowBack: ", allowBack, " parent.character:", string(parent.Character), " current.Character:", string(current.Character))
+		}
 		// TODO 递归到底 | 目前必须如此
-		ok, index := in(runes, position+1, position+1, current, current)
+		ok, index := in(runes, position+1, position+1, allowBack, current, current)
 		if ok {
-			// fmt.Println("递归结果test......")
-			return true, string(runes[left : index+1])
+			fmt.Println("递归结果test......")
+			return true, string(runes[left:index])
 		} else {
 			// fmt.Println("递归查找失败")
 			if isRunesContinue {
-				current, found = parent.Children[ChildrenKey{
+				// 也可以尝试false
+				if currentTemp, foundTemp := parent.Children[ChildrenKey{
 					Character:  runes[position],
-					isContinue: !isRunesContinue,
-				}]
-				// TODO 递归到底 | 目前必须如此
-				ok, index := in(runes, position+1, position+1, current, current)
-				if ok {
-					// fmt.Println("递归结果test......")
-					return true, string(runes[left : index+1])
-				} else {
-					// fmt.Println("递归查找失败")
+					isContinue: false,
+				}]; foundTemp {
+					// isContinue == false  --> allowBack=true
+					allowBack := true
+					// TODO 递归到底 | 目前必须如此
+					ok, index := in(runes, position+1, position+1, allowBack, currentTemp, currentTemp)
+					if ok {
+						// fmt.Println("递归结果test......")
+						return true, string(runes[left:index])
+					} else {
+						// fmt.Println("递归查找失败")
+					}
 				}
+
 			}
 		}
 
